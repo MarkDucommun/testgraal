@@ -27,6 +27,7 @@ jobs:
       - name: Build Native Image with bootBuildImage
         run: |
           java --version
+          ./gradlew --version
           ./gradlew bootBuildImage --imageName ghcr.io/${{ github.repository }}/testgraal-image:latest
 
       - name: Log in to GitHub Container Registry
