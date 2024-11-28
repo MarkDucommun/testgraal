@@ -14,11 +14,8 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set up JDK with SDKMAN!
-        uses: brunopulis/setup-sdkman@v2
-        with:
-          sdk: java
-          version: 23.0.1-graalce
+      - uses: sdkman/sdkman-action@v1
+        id: sdkman
 
       - name: Cache Gradle Dependencies
         uses: actions/cache@v3
