@@ -26,6 +26,7 @@ jobs:
 
       - name: Build Native Image with bootBuildImage
         run: |
+          source "/home/runner/.sdkman/bin/sdkman-init.sh"
           sdk env
           java --version
           ./gradlew --version
