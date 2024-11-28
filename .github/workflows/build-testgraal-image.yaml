@@ -1,0 +1,42 @@
+name: Build GraalVM Image
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK with SDKMAN!
+        uses: brunopulis/setup-sdkman@v2
+        with:
+          sdk: java
+          version: 23.0.1-graalce
+
+      - name: Cache Gradle Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
+
+      - name: Build Native Image with bootBuildImage
+        run: ./gradlew bootBuildImage --imageName ghcr.io/${{ github.repository }}/graalvm-image:latest
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Docker Image to GitHub Container Registry
+        run: |
+          docker push ghcr.io/${{ github.repository }}/graalvm-image:latest
