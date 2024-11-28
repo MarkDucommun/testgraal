@@ -24,6 +24,13 @@ jobs:
           key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: gradle-${{ runner.os }}-
 
+      - name: Cache SDKMAN! Java
+        uses: actions/cache@v3
+        with:
+          path: ~/.sdkman/candidates/java
+          key: graalvm-java-${{ runner.os }}-${{ hashFiles('.sdkmanrc') }}
+          restore-keys: graalvm-java-${{ runner.os }}-
+
       - name: Define Docker Image Name
         run: |
           LOWERCASE_REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
@@ -34,7 +41,6 @@ jobs:
       - name: Build Native Image with bootBuildImage
         run: |
           source "/home/runner/.sdkman/bin/sdkman-init.sh"
-          LOWERCASE_REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           ./gradlew bootBuildImage --imageName $IMAGE_NAME
 
       - name: Log in to GitHub Container Registry
