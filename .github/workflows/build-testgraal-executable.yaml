@@ -36,7 +36,7 @@ jobs:
           source "/home/runner/.sdkman/bin/sdkman-init.sh"
           ./gradlew nativeCompile
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: testgraal-executable
           path: build/native/nativeCompile/testgraal

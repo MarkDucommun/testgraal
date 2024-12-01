@@ -68,16 +68,42 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Azure Login via OIDC
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Find the Last Workflow Run ID with Desired Artifact
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        id: find-run-id
+        run: |
+          TARGET_REPO="<OWNER>/<REPO>"
+          ARTIFACT_NAME="my-other-artifact"
 
-      - uses: actions/download-artifact@v3
+          # Get the latest workflow runs
+          RUNS=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/runs")
+
+          # Iterate through workflow runs to find the artifact
+          for RUN_ID in $(echo "$WORKFLOW_RUNS" | jq -r '.workflow_runs[] | select(.status=="completed") | .id'); do
+          ARTIFACTS=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+            "https://api.github.com/repos/$TARGET_REPO/actions/runs/$RUN_ID/artifacts")
+          
+          # Check if the desired artifact exists
+          MATCH=$(echo "$ARTIFACTS" | jq -r --arg NAME "$ARTIFACT_NAME" '.artifacts[] | select(.name==$NAME) | .id')
+          
+          if [[ -n "$MATCH" ]]; then
+          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+          break
+          fi
+          done
+    
+          if [[ -z "$MATCH" ]]; then
+          echo "Error: Artifact '$ARTIFACT_NAME' not found in recent workflow runs." >&2
+          exit 1
+          fi       
+
+      - uses: actions/download-artifact@v4
         with:
+          github-token: ${{ secrets.GH_PAT }}
           name: testgraal-executable
+          run-id: ${{ env.RUN_ID }}
 
       - name: Create folder structure
         run: |
@@ -92,6 +118,13 @@ jobs:
       - name: Zip the TestgraalApp directory
         run: |
           zip -r TestgraalApp.zip TestgraalApp
+
+      - name: Azure Login via OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Upload TestgraalApp.zip as Artifact
         run: |
