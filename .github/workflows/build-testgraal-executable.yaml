@@ -1,0 +1,42 @@
+name: Build GraalVM Image
+
+on:
+#  push:
+#    branches:
+#      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - uses: sdkman/sdkman-action@main
+        id: sdkman
+
+      - name: Cache Gradle Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
+
+      - name: Cache SDKMAN! Java
+        uses: actions/cache@v3
+        with:
+          path: ~/.sdkman/candidates/java
+          key: graalvm-java-${{ runner.os }}-${{ hashFiles('.sdkmanrc') }}
+          restore-keys: graalvm-java-${{ runner.os }}-
+
+      - name: Build Native Executable
+        run: |
+          source "/home/runner/.sdkman/bin/sdkman-init.sh"
+          ./gradlew nativeCompile
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: testgraal-executable
+          path: build/native/nativeCompile/testgraal

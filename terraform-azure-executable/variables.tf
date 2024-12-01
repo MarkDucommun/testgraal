@@ -8,3 +8,7 @@ variable "location" {
   type        = string
   default     = "East US"
 }
+
+variable "function_app_name" {
+  type = string
+}

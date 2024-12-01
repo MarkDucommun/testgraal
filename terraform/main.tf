@@ -1,50 +1,18 @@
-resource "azurerm_resource_group" "testgraal-rg" {
-  name     = var.resource_group_name
+module "core" {
+  source = "./modules/core"
+  resource_group_name = var.resource_group_name
   location = var.location
 }
 
-resource "azurerm_container_registry" "registry" {
-  name                = "acrtestgraal"
-  resource_group_name = var.resource_group_name
-  location            = var.location
-  sku                 = "Basic"
-  admin_enabled       = true
-}
+module "app" {
+  source = "./modules/app"
 
-resource "azurerm_storage_account" "testgraal-storage" {
-  name                     = "functionappstoragetestgraal"
-  resource_group_name      = var.resource_group_name
-  location                 = var.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-}
-
-resource "azurerm_service_plan" "testgraal-service-plan" {
-  name                = "asp-functionapp-testgraal"
-  resource_group_name = var.resource_group_name
-  location            = var.location
-  os_type             = "Linux"
-  sku_name = "Y1"
-}
-
-resource "azurerm_linux_function_app" "functionapp" {
-  name                = "functionapp-testgraal"
-  resource_group_name = var.resource_group_name
-  location            = var.location
-  service_plan_id     = azurerm_service_plan.testgraal-service-plan.id
-  storage_account_name = azurerm_storage_account.testgraal-storage.name
-  storage_account_access_key = azurerm_storage_account.testgraal-storage.primary_access_key
-
-  app_settings = {
-    FUNCTIONS_WORKER_RUNTIME = "custom"
-    WEBSITES_PORT            = "8080"
-    DOCKER_REGISTRY_SERVER_URL = azurerm_container_registry.registry.login_server
-    DOCKER_REGISTRY_SERVER_USERNAME = azurerm_container_registry.registry.admin_username
-    DOCKER_REGISTRY_SERVER_PASSWORD = azurerm_container_registry.registry.admin_password
-  }
-
-  site_config {
-    always_on = true
-    linux_fx_version = "DOCKER|${azurerm_container_registry.registry.login_server}/testgraal-image:${var.image_tag}"
-  }
+  resource_group_name        = module.core.resource_group_name
+  location                   = module.core.location
+  registry_login_server      = module.core.registry_login_server
+  registry_admin_username    = module.core.registry_admin_username
+  registry_admin_password    = module.core.registry_admin_password
+  storage_account_name       = module.core.storage_account_name
+  storage_account_access_key = module.core.storage_account_access_key
+  service_account_id         = module.core.service_plan_id
 }
