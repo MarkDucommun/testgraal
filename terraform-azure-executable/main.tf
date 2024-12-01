@@ -35,5 +35,6 @@ resource "azurerm_linux_function_app" "functionapp" {
   }
 
   site_config {
+    linux_fx_version = "Custom|https://"
   }
 }
