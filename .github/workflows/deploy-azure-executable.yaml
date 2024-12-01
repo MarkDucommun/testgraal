@@ -73,8 +73,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         id: find-run-id
         run: |
-          TARGET_REPO="<OWNER>/<REPO>"
-          ARTIFACT_NAME="my-other-artifact"
+          ARTIFACT_NAME="testgraal-executable"
 
           # Get the latest workflow runs
           RUNS=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
