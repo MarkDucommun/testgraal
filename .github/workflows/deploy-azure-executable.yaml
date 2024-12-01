@@ -110,12 +110,11 @@ jobs:
 
       - name: Create folder structure
         run: |
-          ls -lA
           mkdir -p TestgraalApp/handler
 
       - name: Move executable and configuration files
         run: |
-          mv testgraal-executable TestgraalApp/handler/
+          mv testgraal TestgraalApp/handler/
           mv azure-executable/function.json TestgraalApp/handler/
           mv azure-executable/host.json TestgraalApp/handler/
 
