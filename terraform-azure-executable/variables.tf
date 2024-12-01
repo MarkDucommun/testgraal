@@ -6,7 +6,7 @@ variable "resource_group_name" {
 variable "location" {
   description = "Azure region where resources will be created"
   type        = string
-  default     = "East US"
+  default     = "Central US"
 }
 
 variable "function_app_name" {
