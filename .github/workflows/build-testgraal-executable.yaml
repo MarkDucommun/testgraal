@@ -1,4 +1,4 @@
-name: Build GraalVM Image
+name: Build GraalVM Executable
 
 on:
 #  push:
