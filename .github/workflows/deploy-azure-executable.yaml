@@ -69,42 +69,42 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-#      - name: Find the Last Workflow Run ID with Desired Artifact
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        id: find-run-id
-#        run: |
-#          # Get the latest workflow runs
-#          WORKFLOW_RUNS=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
-#            "https://api.github.com/repos/${{ github.repository }}/actions/runs")
-#
-#          # Iterate through workflow runs to find the artifact
-#          for RUN_ID in $(echo "$WORKFLOW_RUNS" | jq -r '.workflow_runs[] |select(.name=="Build GraalVM Executable") |  select(.status=="completed") | .id'); do
-#
-#          echo "Checking run ID: $RUN_ID"
-#          ARTIFACTS=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
-#            "https://api.github.com/repos/${{ github.repository }}/actions/runs/$RUN_ID/artifacts")
-#
-#          # Check if the desired artifact exists
-#          MATCH=$(echo "$ARTIFACTS" | jq -r '.artifacts[] | select(.name=="testgraal-executable") | .id')
-#
-#          if [[ -n "$MATCH" ]]; then
-#          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
-#          break
-#          fi
-#          done
-#
-#          if [[ -z "$MATCH" ]]; then
-#          echo "Error: Artifact '$ARTIFACT_NAME' not found in recent workflow runs." >&2
-#          exit 1
-#          fi
+      - name: Find the Last Workflow Run ID with Desired Artifact
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        id: find-run-id
+        run: |
+          # Get the latest workflow runs
+          WORKFLOW_RUNS=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/runs")
 
-      - uses: actions/download-artifact@v4
-        with:
-          github-token: ${{ secrets.GH_PAT }}
-          name: testgraal-executable
-          repository: '${{ github.repository }}'
-          run-id: 12108917535
+          # Iterate through workflow runs to find the artifact
+          for RUN_ID in $(echo "$WORKFLOW_RUNS" | jq -r '.workflow_runs[] |select(.name=="Build GraalVM Executable") |  select(.status=="completed") | .id'); do
+
+          echo "Checking run ID: $RUN_ID"
+          ARTIFACTS=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/runs/$RUN_ID/artifacts")
+
+          # Check if the desired artifact exists
+          ARTIFACT_URL=$(echo "$ARTIFACTS" | jq -r '.artifacts[] | select(.name=="testgraal-executable") | .archive_download_url')
+
+          if [[ -n "$ARTIFACT_URL" ]]; then
+          curl -L -H "Authorization: Bearer $GITHUB_TOKEN" -o testgraal.zip $ARTIFACT_URL
+          break
+          fi
+          done
+
+          if [[ -z "$$ARCHIVE_DOWNLOAD_URL" ]]; then
+          echo "Error: Artifact 'testgraal-executable' not found in recent workflow runs." >&2
+          exit 1
+          fi
+
+#      - uses: actions/download-artifact@v4
+#        with:
+#          github-token: ${{ secrets.GH_PAT }}
+#          name: testgraal-executable
+#          repository: '${{ github.repository }}'
+#          run-id: 12108917535
 
       - name: Create folder structure
         run: |
