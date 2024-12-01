@@ -80,9 +80,9 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/actions/runs")
 
           # Iterate through workflow runs to find the artifact
-          for RUN_ID in $(echo "$WORKFLOW_RUNS" | jq -r '.workflow_runs[] | select(.status=="completed") | .id'); do
+          for RUN_ID in $(echo "$WORKFLOW_RUNS" | jq -r '.workflow_runs[] |select(.name=="Build GraalVM Executable") |  select(.status=="completed") | .id'); do
           ARTIFACTS=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
-            "https://api.github.com/repos/$TARGET_REPO/actions/runs/$RUN_ID/artifacts")
+            "https://api.github.com/repos/${{ github.repository }}/actions/runs/$RUN_ID/artifacts")
           
           # Check if the desired artifact exists
           MATCH=$(echo "$ARTIFACTS" | jq -r --arg NAME "$ARTIFACT_NAME" '.artifacts[] | select(.name==$NAME) | .id')
