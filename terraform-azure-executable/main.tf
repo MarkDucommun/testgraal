@@ -35,8 +35,5 @@ resource "azurerm_linux_function_app" "functionapp" {
   }
 
   site_config {
-    application_stack {
-      runtime_version = "Custom" # Explicitly set for custom handlers
-    }
   }
 }
