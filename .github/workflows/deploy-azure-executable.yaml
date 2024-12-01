@@ -89,7 +89,7 @@ jobs:
           ARTIFACT_URL=$(echo "$ARTIFACTS" | jq -r '.artifacts[] | select(.name=="testgraal-executable") | .archive_download_url')
 
           if [[ -n "$ARTIFACT_URL" ]]; then
-          curl -L -H "Authorization: Bearer $GITHUB_TOKEN" -o testgraal.zip $ARTIFACT_URL
+          curl -L -H "Authorization: Bearer $GITHUB_TOKEN" -o testgraal-executable.zip $ARTIFACT_URL
           break
           fi
           done
@@ -99,6 +99,8 @@ jobs:
           exit 1
           fi
 
+      - name: Extract Artifact
+        run: unzip testgraal-executable.zip
 #      - uses: actions/download-artifact@v4
 #        with:
 #          github-token: ${{ secrets.GH_PAT }}
@@ -108,6 +110,7 @@ jobs:
 
       - name: Create folder structure
         run: |
+          ls -lA
           mkdir -p TestgraalApp/handler
 
       - name: Move executable and configuration files
