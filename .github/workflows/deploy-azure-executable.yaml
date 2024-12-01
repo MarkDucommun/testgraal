@@ -76,7 +76,7 @@ jobs:
           ARTIFACT_NAME="testgraal-executable"
 
           # Get the latest workflow runs
-          RUNS=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+          WORKFLOW_RUNS=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
             "https://api.github.com/repos/${{ github.repository }}/actions/runs")
 
           # Iterate through workflow runs to find the artifact
