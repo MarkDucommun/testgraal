@@ -30,19 +30,19 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: terraform
+        working-directory: terraform-azure-executable
 
       - name: Terraform Plan
         run: |
           terraform plan -out=tfplan -input=false \
           -var "resource_group_name=testgraal-executable-rg" \
           -var "function_app_name=testgraal-executable-functionapp" \
-        working-directory: terraform
+        working-directory: terraform-azure-executable
 
       - name: Terraform Apply
         id: registry-terraform
         run: terraform apply -input=false tfplan
-        working-directory: terraform
+        working-directory: terraform-azure-executable
 
       - uses: actions/download-artifact@v3
         with:
