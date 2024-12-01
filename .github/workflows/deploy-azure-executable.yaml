@@ -18,13 +18,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Azure Login via OIDC
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
@@ -68,3 +61,42 @@ jobs:
             --resource-group testgraal-executable-rg \
             --name testgraal-executable-functionapp \
             --src functionapp-testgraal.zip
+
+  deploy-executable:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Azure Login via OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: testgraal-executable
+
+      - name: Create folder structure
+        run: |
+          mkdir -p TestgraalApp/handler
+
+      - name: Move executable and configuration files
+        run: |
+          mv testgraal-executable TestgraalApp/handler/
+          mv azure-executable/function.json TestgraalApp/handler/
+          mv azure-executable/host.json TestgraalApp/handler/
+
+      - name: Zip the TestgraalApp directory
+        run: |
+          zip -r TestgraalApp.zip TestgraalApp
+
+      - name: Upload TestgraalApp.zip as Artifact
+        run: |
+          az functionapp deployment source config-zip \
+            --resource-group testgraal-executable-rg \
+            --name testgraal-executable-functionapp \
+            --src functionapp-testgraal.zip
+
