@@ -86,6 +86,8 @@ jobs:
           mv testgraal TestgraalApp/
           mv azure-executable/root/function.json TestgraalApp/root/function.json
           mv azure-executable/host.json TestgraalApp/host.json
+          ls -lA TestgraalApp
+          ls -lA TestgraalApp/root
 
       - name: Zip the TestgraalApp directory
         run: |
