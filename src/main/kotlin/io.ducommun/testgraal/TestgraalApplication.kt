@@ -5,6 +5,7 @@ import org.springframework.aot.hint.annotation.RegisterReflectionForBinding
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.runApplication
 import org.springframework.context.support.beans
+import org.springframework.core.env.Environment
 import org.springframework.core.io.ClassPathResource
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
 import org.springframework.http.HttpStatus
@@ -76,10 +77,13 @@ fun main(args: Array<String>) {
                 bean { HabitHandler(ref()) }
                 bean {
                     router {
-                        val handler = ref<HabitHandler>()
-                        GET("/hello") { ServerResponse.ok().bodyValue("Hello, World!") }
-                        GET("/habits/{id}", handler::getHabitById)
-                        POST("/habits", handler::createHabit)
+                        POST( "/") { ServerResponse.ok().build() }
+                        path("/api/root").nest {
+                            val handler = ref<HabitHandler>()
+                            GET("/hello") { ServerResponse.ok().bodyValue("Hello, World!") }
+                            GET("/habits/{id}", handler::getHabitById)
+                            POST("/habits", handler::createHabit)
+                        }
                     }
                 }
             }

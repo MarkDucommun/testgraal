@@ -19,6 +19,14 @@ resource "azurerm_service_plan" "testgraal_service_plan" {
   sku_name = "Y1"
 }
 
+resource "azurerm_application_insights" "app_insights" {
+  name                = "${var.function_app_name}-appinsights"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  application_type    = "web" # Application Insights type for web apps and function apps
+}
+
+
 resource "azurerm_linux_function_app" "functionapp" {
   name                = var.function_app_name
   resource_group_name = var.resource_group_name
@@ -31,10 +39,15 @@ resource "azurerm_linux_function_app" "functionapp" {
     FUNCTIONS_WORKER_RUNTIME     = "custom" # Required for native executables
     WEBSITES_PORT                = "8080"  # Your app listens on this port
     AzureWebJobsStorage          = azurerm_storage_account.testgraal_storage.primary_connection_string
-    FUNCTION_APP_EDIT_MODE       = "readonly" # Ensure read-only mode for runtime
+    APPLICATIONINSIGHTS_CONNECTION_STRING = azurerm_application_insights.app_insights.connection_string
+    # FUNCTION_APP_EDIT_MODE       = "readonly" # Ensure read-only mode for runtime
+  }
+
+  auth_settings {
+    enabled = false
   }
 
   site_config {
-    linux_fx_version = "Custom|https://"
+    always_on = false
   }
 }

@@ -43,3 +43,4 @@ out/
 **/.terraform
 **/tfplan
 **/.terraform.lock.hcl
+**/local.settings.json
