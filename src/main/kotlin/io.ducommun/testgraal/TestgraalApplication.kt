@@ -5,7 +5,6 @@ import org.springframework.aot.hint.annotation.RegisterReflectionForBinding
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.runApplication
 import org.springframework.context.support.beans
-import org.springframework.core.env.Environment
 import org.springframework.core.io.ClassPathResource
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
 import org.springframework.http.HttpStatus
@@ -17,55 +16,9 @@ import org.springframework.web.reactive.function.server.bodyToMono
 import org.springframework.web.reactive.function.server.router
 import reactor.core.publisher.Mono
 
-//import org.springframework.boot.autoconfigure.SpringBootApplication
-//import org.springframework.boot.runApplication
-//import org.springframework.data.annotation.Id
-//import org.springframework.data.repository.reactive.ReactiveCrudRepository
-//import org.springframework.http.HttpStatus
-//import org.springframework.http.ResponseEntity
-//import org.springframework.stereotype.Repository
-//import org.springframework.web.bind.annotation.*
-//import reactor.core.publisher.Mono
-//import reactor.kotlin.core.publisher.toMono
-//
-//
-//@RestController
-//@SpringBootApplication
-//class TestgraalApplication(
-//    private val habitRepository: HabitRepository
-//) {
-//
-//    @GetMapping("/hello")
-//    fun hello(): String = "Hello, World!"
-//
-//    @GetMapping("habits/{id}")
-//    fun home(@PathVariable id: Int): Mono<ResponseEntity<String>> =
-//        habitRepository.findById(id)
-//            .map { ResponseEntity.ok(it.name) }
-//
-//    @PostMapping("/habits")
-//    fun echo(@RequestBody habit: Mono<HabitRegistration>): Mono<ResponseEntity<Unit>> =
-//        habit
-//            .map { Habit(name = it.name) }
-//            .flatMap { habitRepository.save(it).map(Habit::success) }
-//            .doOnSuccess { println("Registered Habit: $it") }
-//            .doOnError { println("Failed to register Habit: ${it.message}") }
-//            .onErrorResume { (it.message ?: "Something went wrong").failure<Habit>().toMono() }
-//            .map {
-//                when (it) {
-//                    is Result.Success -> ResponseEntity(HttpStatus.CREATED)
-//                    is Result.Failure -> ResponseEntity(HttpStatus.BAD_REQUEST)
-//                }
-//            }
-//}
-//
-//
-//fun main(args: Array<String>) {
-//    runApplication<TestgraalApplication>(*args)
-//}
-
 fun main(args: Array<String>) {
     runApplication<FunctionalApplication>(*args) {
+        setDefaultProperties(mapOf(serverPort))
         addInitializers(
             beans {
                 bean {
@@ -77,7 +30,7 @@ fun main(args: Array<String>) {
                 bean { HabitHandler(ref()) }
                 bean {
                     router {
-                        POST( "/") { ServerResponse.ok().build() }
+                        POST("/") { ServerResponse.ok().build() }
                         path("/api/root").nest {
                             val handler = ref<HabitHandler>()
                             GET("/hello") { ServerResponse.ok().bodyValue("Hello, World!") }
@@ -114,3 +67,7 @@ class HabitHandler(private val habitRepository: HabitRepository) {
             .flatMap { ServerResponse.status(HttpStatus.CREATED).bodyValue(it) }
             .onErrorResume { ServerResponse.status(HttpStatus.BAD_REQUEST).build() }
 }
+
+private val serverPort: Pair<String, Any> get() = "server.port" to customHandlerPort
+
+private val customHandlerPort get() = System.getenv("FUNCTIONS_CUSTOMHANDLER_PORT")?.toIntOrNull() ?: 8080
